@@ -1,0 +1,37 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[test]"
+      - run: pytest -q --cov=exceptionledger --cov-report=term-missing
+      - name: CLI smoke test
+        run: |
+          python -m exceptionledger --help > /dev/null
+          export EXCEPTIONLEDGER_DB="$RUNNER_TEMP/smoke.db"
+          fp=$(python -m exceptionledger fingerprint --rule r --file a.py --line 1 --snippet "x = 1")
+          python -m exceptionledger request --fingerprint "$fp" --title t --justification j --requested-by a --days 1
+          python -m exceptionledger approve --id EX-0001 --approver b
+          python -m exceptionledger verify
