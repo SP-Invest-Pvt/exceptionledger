@@ -68,6 +68,10 @@ def build_parser() -> argparse.ArgumentParser:
     ls.add_argument("--status", choices=STATUSES)
     ls.add_argument("--format", choices=["table", "json"], default="table")
 
+    hs = sub.add_parser("history", help="every ledger entry for one exception")
+    hs.add_argument("--id", required=True)
+    hs.add_argument("--format", choices=["table", "json"], default="table")
+
     vf = sub.add_parser("verify", help="recompute the hash chain and replay it against the exceptions")
     vf.add_argument("--format", choices=["text", "json"], default="text")
 
@@ -106,6 +110,15 @@ def run(a: argparse.Namespace) -> int:
             print(f"{ex.id} {ex.status}")
         elif a.cmd == "list":
             _print_exceptions(store.all_exceptions(conn, a.status), a.format)
+        elif a.cmd == "history":
+            if store.get(conn, a.id) is None:
+                raise LedgerError(f"no exception with id {a.id}")
+            entries = ledger.history(conn, a.id)
+            if a.format == "json":
+                print(json.dumps(entries, indent=2))
+            else:
+                for e in entries:
+                    print(f"{e['seq']:>4}  {e['ts']}  {e['action']:<8} {e['actor']:<14} {e['hash'][:12]}")
         elif a.cmd == "verify":
             res = ledger.verify(conn)
             if a.format == "json":
