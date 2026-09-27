@@ -2,7 +2,7 @@
 
 A tamper-evident register for security policy exceptions. It knows when an exception expires, who approved it, and when the code it covers has changed.
 
-[![ci](https://github.com/SP-Invest-Pvt/exceptionledger/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
+[![ci](https://github.com/sp-kernel-stack/exceptionledger/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
 ## The problem
 
@@ -45,7 +45,7 @@ CREATE TABLE ledger(seq INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, act
 
 ## Demo
 
-A real run. `examples/src/reports.py` has one SQL string built with `%`, [Bandit](https://github.com/PyCQA/bandit) 1.9.4 flags it as B608, and the team accepts it for a quarter. Then someone edits the line. Timestamps and hashes are from the actual run.
+A real run. `examples/src/reports.py` has one SQL string built with `%`, [Bandit](https://github.com/PyCQA/bandit) flags it as B608, and the team accepts it for 90 days. Then someone edits the line. Timestamps and hashes are from the actual run.
 
 ```
 $ bandit -q -r src -f sarif -o scan1.sarif
@@ -100,7 +100,7 @@ The edit that reopened EX-0001 is the one that matters: the approved justificati
 Python 3.11 or newer, standard library only (`sqlite3`, `hashlib`, `json`).
 
 ```bash
-git clone https://github.com/SP-Invest-Pvt/exceptionledger && cd exceptionledger
+git clone https://github.com/sp-kernel-stack/exceptionledger && cd exceptionledger
 pip install -e ".[test]"
 pytest
 python -m exceptionledger --help
