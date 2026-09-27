@@ -35,6 +35,13 @@ def append(conn: sqlite3.Connection, ts: str, actor: str, action: str, exception
     return seq
 
 
+def history(conn: sqlite3.Connection, exception_id: str) -> list[dict]:
+    """Ledger entries for one exception, oldest first."""
+    rows = conn.execute("SELECT seq, ts, actor, action, hash FROM ledger WHERE exception_id = ? ORDER BY seq",
+                        (exception_id,))
+    return [dict(r) for r in rows]
+
+
 @dataclass
 class VerifyResult:
     ok: bool

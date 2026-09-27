@@ -117,6 +117,7 @@ request     --fingerprint FP --title T --justification J --requested-by X [--day
 approve     --id ID --approver Y
 close       --id ID --by Z
 list        [--status requested|approved|expired|closed|reopened] [--format table|json]
+history     --id ID [--format table|json]
 verify      [--format text|json]
 rescan      --sarif new.sarif [--source-root .] [--format table|json]
 sweep       [--format table|json]

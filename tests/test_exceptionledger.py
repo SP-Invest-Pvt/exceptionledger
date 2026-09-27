@@ -290,3 +290,19 @@ def test_deleting_the_newest_entry_is_caught_by_replay(db):
     res = ledger.verify(conn)
     assert not res.ok and res.broken_seq is None
     assert "EX-0001: status 'approved' but the ledger says 'requested'" in res.problem
+
+
+def test_history_lists_entries_for_one_exception(capsys, db):
+    conn = store.connect(db)
+    ex = approved(conn)
+    lifecycle.request(conn, FP, "other", "j", "dev.carol", 30)
+    lifecycle.transition(conn, ex.id, "close", "dev.alice")
+    conn.close()
+    code, out, _ = cli(capsys, db, "history", "--id", ex.id, "--format", "json")
+    entries = json.loads(out)
+    assert code == 0
+    assert [(e["seq"], e["action"], e["actor"]) for e in entries] ==         [(1, "request", "dev.alice"), (2, "approve", "sec.bob"), (4, "close", "dev.alice")]
+    code, out, _ = cli(capsys, db, "history", "--id", ex.id)
+    assert out.splitlines()[1].split()[:4] == ["2", "2026-09-01T09:00:00Z", "approve", "sec.bob"]
+    code, _, err = cli(capsys, db, "history", "--id", "EX-0404")
+    assert code == 2 and "no exception with id EX-0404" in err
